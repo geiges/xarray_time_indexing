@@ -4,7 +4,7 @@
 name: Pytest run
 
 on:
-  push:pytest set upd requirements
+  push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
