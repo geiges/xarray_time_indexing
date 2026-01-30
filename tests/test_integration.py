@@ -8,7 +8,7 @@ Created on Fri Jan 30 18:13:35 2026
 
 import xarray as xr
 
-import xarray_time_index as tix
+import xarray_time_indexing as tix
 
 
 def test_integration_dataset():
