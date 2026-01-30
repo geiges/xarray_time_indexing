@@ -1,0 +1,19 @@
+[project]
+name = "xarray-time-indexing"
+version = "0.1.0"
+description = "Accessors for time-index management of xarray coordinates"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=3.0.0",
+    "xarray",
+]
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+testpaths = ["tests",]

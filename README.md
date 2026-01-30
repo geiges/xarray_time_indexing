@@ -1,2 +1,2 @@
-# xarray_time_indexing
-Additional accessors for xarray for better handling of datetime like indexes
+## Xarray Time Indexing
+- Additional accessors and functions for xarray for better handling of datetime like indexes
