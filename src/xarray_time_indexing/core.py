@@ -7,6 +7,10 @@ Created on Fri Jan 30 13:37:36 2026
 """
 import xarray as xr
 import pandas as pd
+from .config import ABS_COORD, DLT_COORD, REF_COORD
+
+# %% Functions
+
 
 def assert_same_timezone(*datasets):
     timezone_meta = [ds.attrs['tz'] for ds in datasets]
@@ -16,27 +20,26 @@ def assert_same_timezone(*datasets):
     return timezone_meta[0]
 
 
-# %% Functions
 
 
 def switch_to_absolute_time(ds):
     ds = ds.copy()
-    # ds.coords['delta'] = pd.Timestamp(ds.ref_time.item()) + pd.TimedeltaIndex(ds.delta)
-    if 'ref_time' in ds.indexes:
-        ds.coords['delta'] = ds.indexes['ref_time'][0] + pd.TimedeltaIndex(ds.delta)
-    elif 'ref_time' in ds.coords:
-        ds.coords['delta'] = pd.Timestamp(ds.ref_time.item()) + pd.TimedeltaIndex(
+    # ds.coords[DLT_COORD] = pd.Timestamp(ds.ref_time.item()) + pd.TimedeltaIndex(ds.delta)
+    if REF_COORD in ds.indexes:
+        ds.coords[DLT_COORD] = ds.indexes[REF_COORD][0] + pd.TimedeltaIndex(ds.delta)
+    elif REF_COORD in ds.coords:
+        ds.coords[DLT_COORD] = pd.Timestamp(ds.ref_time.item()) + pd.TimedeltaIndex(
             ds.delta
         )
     else:
         raise (Exception('ref_time not in coordinates or indexes'))
 
-    # ds.attrs['ref_time'] = pd.Timestamp(ds.ref_time.item())
+    # ds.attrs[REF_COORD] = pd.Timestamp(ds.ref_time.item())
 
-    ds = ds.rename({'delta': 'time'})
+    ds = ds.rename({DLT_COORD: ABS_COORD})
 
     try:
-        ds = ds.squeeze('ref_time')
+        ds = ds.squeeze(REF_COORD)
     except Exception:
         pass
     return ds
@@ -49,8 +52,8 @@ def add_absolute_time(ds):
             Exception('More than one refernce time in data. Absolute time not unique')
         )
     ds = ds.copy()
-    ds.coords['time'] = (
-        'delta',
+    ds.coords[ABS_COORD] = (
+        DLT_COORD,
         pd.Timestamp(ds.ref_time.item()) + pd.TimedeltaIndex(ds.delta),
     )
     return ds
@@ -60,23 +63,23 @@ def switch_to_delta_time(ds, ref_time=None):
     if ref_time is None:
         ref_time = pd.Timestamp(ds.ref_time.item())
     ds = ds.copy()
-    ds.coords['time'] = pd.DatetimeIndex(ds.time) - pd.Timestamp(ref_time)
-    ds = ds.rename({'time': 'delta'})
+    ds.coords[ABS_COORD] = pd.DatetimeIndex(ds.time) - pd.Timestamp(ref_time)
+    ds = ds.rename({ABS_COORD: DLT_COORD})
 
-    if 'ref_time' not in ds.coords:
+    if REF_COORD not in ds.coords:
         # ds.assign_coords(ref_time = pd.DatetimeIndex([ref_time,]))
-        # ds = ds.expand_dims('ref_time')
-        if 'ref_time' not in ds.dims:
-            ds = ds.expand_dims(dim="ref_time")
-        ds.coords['ref_time'] = pd.DatetimeIndex([ref_time])
+        # ds = ds.expand_dims(REF_COORD)
+        if REF_COORD not in ds.dims:
+            ds = ds.expand_dims(dim=REF_COORD)
+        ds.coords[REF_COORD] = pd.DatetimeIndex([ref_time])
     else:
-        if 'ref_time' not in ds.dims:
-            ds = ds.expand_dims(dim="ref_time")
+        if REF_COORD not in ds.dims:
+            ds = ds.expand_dims(dim=REF_COORD)
 
-        ds.coords['ref_time'] = pd.DatetimeIndex([ref_time])
+        ds.coords[REF_COORD] = pd.DatetimeIndex([ref_time])
 
     if isinstance(ds, xr.Dataset):
-        ds = ds.transpose(*list(ds.dims.keys()))
+        ds = ds.transpose(*list(ds.sizes.keys()))
     elif isinstance(ds, xr.Dataset):
-        ds = ds.transpose(*ds.dims)
+        ds = ds.transpose(*ds.sizes)
     return ds

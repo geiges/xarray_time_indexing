@@ -7,3 +7,4 @@ Created on Fri Jan 30 13:39:20 2026
 """
 
 from . accessors import TimeIndexAccessor
+from . import config

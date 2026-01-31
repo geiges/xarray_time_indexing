@@ -8,6 +8,8 @@ Created on Fri Jan 30 13:37:00 2026
 import xarray as xr
 
 from .core import switch_to_absolute_time, switch_to_delta_time
+from .config import ABS_COORD, DLT_COORD, REF_COORD
+
 
 if not hasattr(xr.Dataset, 'tix'):
 
@@ -24,28 +26,28 @@ if not hasattr(xr.Dataset, 'tix'):
             return switch_to_delta_time(self._obj, ref_time)
 
         def tz_localize(self):
-            if 'time' not in self._obj.coords.keys():
-                raise (Exception('"time" must be in coordinates'))
+            if ABS_COORD not in self._obj.coords.keys():
+                raise (Exception(f'{ABS_COORD} must be in coordinates'))
 
             ds = self._obj.copy()
-            ds.coords['time'] = ds.indexes['time'].tz_localize(ds.attrs['tz'])
+            ds.coords[ABS_COORD] = ds.indexes[ABS_COORD].tz_localize(ds.attrs['tz'])
             return ds
 
         def tz_delocalize(self):
-            if 'time' not in self._obj.coords.keys():
-                raise (Exception('"time" must be in coordinates'))
+            if ABS_COORD not in self._obj.coords.keys():
+                raise (Exception('{ABS_COORD} must be in coordinates'))
 
             ds = self._obj.copy()
-            ds.coords['time'] = ds.indexes['time'].tz_localize(None)
+            ds.coords[ABS_COORD] = ds.indexes[ABS_COORD].tz_localize(None)
             return ds
 
         def tz_convert(self, tz):
-            if 'time' not in self._obj.coords.keys():
-                raise (Exception('"time" must be in coordinates'))
+            if ABS_COORD not in self._obj.coords.keys():
+                raise (Exception('{ABS_COORD} must be in coordinates'))
             ds = self._obj.copy()
 
-            if ds.indexes['time'].tzinfo is None:
+            if ds.indexes[ABS_COORD].tzinfo is None:
                 ds = ds.tix.tz_localize()
-            ds.coords['time'] = ds.indexes['time'].tz_convert(tz)
+            ds.coords[ABS_COORD] = ds.indexes[ABS_COORD].tz_convert(tz)
             ds.attrs['tz'] = tz
             return ds
